@@ -461,12 +461,12 @@ if SHOW_ON_DISCORD:
         print("failed to start discord status")
 
 # making missing desktop shortcuts
-if not desktop_file_exists("Edgeware.lnk"):
-    make_shortcut(shortcut_script(PATH, "default", "start.pyw", "Edgeware"))
-if not desktop_file_exists("Config.lnk"):
-    make_shortcut(shortcut_script(PATH, "config", "config.pyw", "Config"))
-if not desktop_file_exists("Panic.lnk"):
-    make_shortcut(shortcut_script(PATH, "panic", "panic.pyw", "Panic"))
+# if not desktop_file_exists("Edgeware.lnk"):
+#     make_shortcut(shortcut_script(PATH, "default", "start.pyw", "Edgeware"))
+# if not desktop_file_exists("Config.lnk"):
+#     make_shortcut(shortcut_script(PATH, "config", "config.pyw", "Config"))
+# if not desktop_file_exists("Panic.lnk"):
+#     make_shortcut(shortcut_script(PATH, "panic", "panic.pyw", "Panic"))
 
 if LOADING_FLAIR:
     logging.info("started loading flair")

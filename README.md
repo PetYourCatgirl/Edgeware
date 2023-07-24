@@ -12,3 +12,4 @@ This is a fork of [PetitTournesol/Edgeware](https://github.com/PetitTournesol/Ed
   - If `Rotate Wallpapers` is enabled, wallpaper will be set to something in this folder (search recursively)
   - Manually specifying each wallpaper in the config no longer has an effect
   - Default wallpaper remains unaffected by this change
+- No longer adds desktop shortcuts on start
