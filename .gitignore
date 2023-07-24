@@ -1,0 +1,5 @@
+EdgeWare/logs
+EdgeWare/resource
+config.cfg
+.vscode/settings.json
+*.pyc

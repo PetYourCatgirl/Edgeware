@@ -10,6 +10,7 @@ import webbrowser
 import ctypes
 import threading as thread
 import logging
+from utils import get_file_paths_recursive
 from tkinter import messagebox, simpledialog, Tk, Frame, Label, Button, RAISED
 from itertools import count, cycle
 from PIL import Image, ImageTk, ImageFilter
@@ -84,6 +85,7 @@ def monitor_areas():  # all that matters from this is list(mapObj[monitor index]
 
 
 # End Imported Code
+
 
 # used to check passed tags for script mode
 def checkTag(tag) -> bool:
@@ -195,6 +197,7 @@ try:
 except:
     print("no CAPTIONS.json")
 
+
 # gif label class
 class GifLabel(tk.Label):
     def load(
@@ -291,26 +294,27 @@ class VideoLabel(tk.Label):
 
 def run():
     # var things
-    arr = os.listdir(f"{os.path.abspath(os.getcwd())}\\resource\\img\\")
+    arr = get_file_paths_recursive(os.path.join(PATH, "resource", "img"))
+
     item = arr[rand.randrange(len(arr))]
     video_mode = False
 
-    while item.split(".")[-1].lower() == "ini":
-        item = arr[rand.randrange(len(arr))]
+    while item.suffix.lower() == "ini":
+        item = rand.choice(arr)
     if len(SYS_ARGS) >= 1 and SYS_ARGS[0] != "%RAND%":
-        item = rand.choice(os.listdir(os.path.join(PATH, "resource", "vid")))
+        root_path = os.path.join(PATH, "resource", "vid")
+        item = rand.choice(get_file_paths_recursive(root_path))
+        logging.info("selected item %s", item)
     if len(SYS_ARGS) >= 1 and SYS_ARGS[0] == "-video":
         video_mode = True
 
     if not video_mode:
         while True:
             try:
-                image = Image.open(
-                    os.path.abspath(f"{os.getcwd()}\\resource\\img\\{item}")
-                )
+                image = Image.open(item)
                 break
             except:
-                item = arr[rand.randrange(len(arr))]
+                item = rand.choice(arr)
     else:
         from videoprops import get_video_properties
 
@@ -320,7 +324,7 @@ def run():
             "RGB", (video_properties["width"], video_properties["height"])
         )
 
-    gif_bool = item.split(".")[-1].lower() == "gif"
+    gif_bool = item.suffix.lower() == "gif"
     border_wid_const = 5
     monitor_data = monitor_areas()
 
@@ -384,7 +388,7 @@ def run():
         # gif mode
         label = GifLabel(root)
         label.load(
-            path=os.path.abspath(f"{os.getcwd()}\\resource\\img\\{item}"),
+            path=str(item),
             resized_width=resized_image.width,
             resized_height=resized_image.height,
         )
@@ -587,7 +591,7 @@ if __name__ == "__main__":
                 "logs",
                 time.asctime().replace(" ", "_").replace(":", "-") + "-popup.txt",
             ),
-            format="%(levelname)s:%(message)s",
+            format="%(levelname)s:%(module)s:%(lineno)d:%(message)s",
             level=logging.DEBUG,
         )
         logging.fatal(f"failed to start popup\n{e}")

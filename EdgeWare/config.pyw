@@ -46,7 +46,7 @@ logging.basicConfig(
     filename=os.path.join(
         PATH, "logs", time.asctime().replace(" ", "_").replace(":", "-") + "-dbg.txt"
     ),
-    format="%(levelname)s:%(message)s",
+    format="%(levelname)s:%(module)s:%(lineno)d:%(message)s",
     level=logging.DEBUG,
 )
 logging.info("Started config logging successfully.")

@@ -17,6 +17,7 @@ import logging
 import sys
 from dataclasses import dataclass
 from tkinter import messagebox, simpledialog
+from utils import get_file_paths_recursive
 
 PATH = str(pathlib.Path(__file__).parent.absolute())
 os.chdir(PATH)
@@ -30,7 +31,7 @@ logging.basicConfig(
         "logs",
         time.asctime().replace(" ", "_").replace(":", "-") + "-ew_start.txt",
     ),
-    format="%(levelname)s:%(message)s",
+    format="%(levelname)s:%(module)s:%(lineno)d:%(message)s",
     level=logging.DEBUG,
 )
 logging.info("Started start logging successfully.")
@@ -40,6 +41,8 @@ SYS_ARGS.pop(0)
 logging.info(f"args: {SYS_ARGS}")
 
 settings = {}
+
+
 # func for loading settings, really just grouping it
 def load_settings():
     global settings
@@ -409,7 +412,9 @@ except Exception as e:
 
 # checking presence of resources
 try:
-    HAS_IMAGES = len(os.listdir(PATH + "\\resource\\img\\")) > 0
+    HAS_IMAGES = (
+        len(get_file_paths_recursive(os.path.join(PATH, "resource", "img"))) > 0
+    )
     logging.info("image resources found")
 except Exception as e:
     logging.warning(f"no image resource folder found\n\tReason: {e}")
@@ -418,8 +423,8 @@ except Exception as e:
 
 VIDEOS = []
 try:
-    for vid in os.listdir(PATH + "\\resource\\vid\\"):
-        VIDEOS.append(PATH + "\\resource\\vid\\" + vid)
+    for vid in get_file_paths_recursive(os.path.join(PATH, "resource", "vid")):
+        VIDEOS.append(vid)
     logging.info("video resources found")
 except Exception as e:
     logging.warning(f"no video resource folder found\n\tReason: {e}")
@@ -427,12 +432,20 @@ except Exception as e:
 
 AUDIO = []
 try:
-    for aud in os.listdir(PATH + "\\resource\\aud\\"):
-        AUDIO.append(PATH + "\\resource\\aud\\" + aud)
+    for aud in get_file_paths_recursive(os.path.join(PATH, "resource", "aud")):
+        AUDIO.append(aud)
     logging.info("audio resources found")
 except:
     logging.warning(f"no audio resource folder found\n\tReason: {e}")
     print("no audio folder found")
+
+try:
+    if len(get_file_paths_recursive(os.path.join(PATH, "resource", "wallpapers"))) > 1:
+        logging.info("Wallpapers found")
+    else:
+        logging.info("No wallpapers found")
+except:
+    logging.info("Error trying to read wallpapers")
 
 HAS_WEB = WEB_JSON_FOUND and len(WEB_DICT["urls"]) > 0
 # end of checking resource presence
@@ -465,6 +478,7 @@ if not HIBERNATE_MODE:
     ctypes.windll.user32.SystemParametersInfoW(
         20, 0, PATH + "\\resource\\wallpaper.png", 0
     )
+
 
 # selects url to be opened in new tab by web browser
 def url_select(arg: int):
@@ -637,7 +651,6 @@ def do_roll(mod: int) -> bool:
 # booru handling class
 class BooruDownloader:
     def __init__(self, booru: str, tags: list[str] = None):
-
         self.extension_list: list[str] = ["jpg", "jpeg", "png", "gif"]
 
         self.exception_list: dict[str, BooruScheme] = {
@@ -874,22 +887,23 @@ def rotate_wallpapers():
     prv = "default"
     base = int(settings["wallpaperTimer"])
     vari = int(settings["wallpaperVariance"])
-    while len(settings["wallpaperDat"].keys()) > 1:
-        time.sleep(base + rand.randint(-vari, vari))
-        selectedWallpaper = list(settings["wallpaperDat"].keys())[
-            rand.randrange(0, len(settings["wallpaperDat"].keys()))
-        ]
-        while selectedWallpaper == prv:
-            selectedWallpaper = list(settings["wallpaperDat"].keys())[
-                rand.randrange(0, len(settings["wallpaperDat"].keys()))
-            ]
+    # Swap between any wallpapers in subdirectories of PATH/resource/wallpapers
+    wallpapers = get_file_paths_recursive(os.path.join(PATH, "resource", "wallpapers"))
+    while len(wallpapers) > 1:
+        wallpapers = get_file_paths_recursive(
+            os.path.join(PATH, "resource", "wallpapers")
+        )
+        if prv in wallpapers:
+            wallpapers.remove(prv)
+        selectedWallpaper = rand.choice(wallpapers)
         ctypes.windll.user32.SystemParametersInfoW(
             20,
             0,
-            os.path.join(PATH, "resource", settings["wallpaperDat"][selectedWallpaper]),
+            str(selectedWallpaper),
             0,
         )
         prv = selectedWallpaper
+        time.sleep(base + rand.randint(-vari, vari))
 
 
 def do_timer():
